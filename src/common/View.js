@@ -196,7 +196,7 @@ function View(element, calendar, viewName) {
 	---------------------------------------------------------------------------------*/
 	
 	
-	function eventDrop(e, event, dayDelta, minuteDelta, allDay, ev, ui) {
+	function eventDrop(e, event, dayDelta, minuteDelta, allDay, ev, ui, srcNo) {
 		var oldAllDay = event.allDay;
 		var eventId = event._id;
 		moveEvents(eventsByID[eventId], dayDelta, minuteDelta, allDay);
@@ -213,7 +213,8 @@ function View(element, calendar, viewName) {
 				reportEventChange(eventId);
 			},
 			ev,
-			ui
+			ui,
+			srcNo
 		);
 		reportEventChange(eventId);
 	}
@@ -411,7 +412,7 @@ function View(element, calendar, viewName) {
 	// cell offset -> day offset
 	function cellOffsetToDayOffset(cellOffset) {
 		var day0 = t.visStart.getDay(); // first date's day of week
-		cellOffset += dayToCellMap[day0]; // normlize cellOffset to beginning-of-week
+		cellOffset += dayToCellMap[day0]; // normlize cellOffset to beginning-of-weekz
 		return Math.floor(cellOffset / cellsPerWeek) * 7 // # of days from full weeks
 			+ cellToDayMap[ // # of days from partial last week
 				(cellOffset % cellsPerWeek + cellsPerWeek) % cellsPerWeek // crazy math to handle negative cellOffsets

@@ -155,3 +155,13 @@
 	}
 	
 	
+.fc-source .inner {
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 100%;
+}
+.fc-source .outer {
+    height: 1.5em;
+    position: relative;
+}

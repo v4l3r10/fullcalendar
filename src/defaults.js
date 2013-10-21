@@ -72,8 +72,10 @@ var defaults = {
 	
 	dropAccept: '*',
 	
-	handleWindowResize: true
-	
+	handleWindowResize: true,
+
+	indentationMultiplier : 1,
+	splitBySources: false
 };
 
 // right-to-left defaults

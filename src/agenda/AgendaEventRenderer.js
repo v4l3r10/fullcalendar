@@ -7,7 +7,8 @@ function AgendaEventRenderer() {
 	t.renderEvents = renderEvents;
 	t.clearEvents = clearEvents;
 	t.slotSegHtml = slotSegHtml;
-	
+	t.incrementDays = true;
+	t.draggableSlotEvent = draggableSlotEvent;
 	
 	// imports
 	DayEventRenderer.call(t);
@@ -30,6 +31,7 @@ function AgendaEventRenderer() {
 	var cellToDate = t.cellToDate;
 	var getColCnt = t.getColCnt;
 	var getColWidth = t.getColWidth;
+	var getSrcColWidth = t.getSrcColWidth;
 	var getSnapHeight = t.getSnapHeight;
 	var getSnapMinutes = t.getSnapMinutes;
 	var getSlotContainer = t.getSlotContainer;
@@ -49,6 +51,7 @@ function AgendaEventRenderer() {
 	// overrides
 	t.draggableDayEvent = draggableDayEvent;
 
+	var splitBySources = opt('splitBySources');
 	
 	
 	/* Rendering
@@ -90,27 +93,39 @@ function AgendaEventRenderer() {
 			visEventEnds = $.map(events, slotEventEnd),
 			i,
 			j, seg,
-			colSegs,
+			colSegs, src,
 			segs = [];
-
+		var sourcesCount = opt('splitBySources') ? calendar.getSourcesCount() : 1;
+		
 		for (i=0; i<colCnt; i++) {
+			for (src=0; src<sourcesCount; src++) {
+				d = cellToDate(0, i);
+				addMinutes(d, minMinute);
 
-			d = cellToDate(0, i);
-			addMinutes(d, minMinute);
+				if (opt('splitBySources')) {
+					colSegs = sliceSegs(
+						events,
+						visEventEnds,
+						d,
+						addMinutes(cloneDate(d), maxMinute-minMinute),
+                        src
+					);
+				} else {
+					colSegs = sliceSegs(
+						events,
+						visEventEnds,
+						d,
+						addMinutes(cloneDate(d), maxMinute-minMinute)
+					);
+				}
 
-			colSegs = sliceSegs(
-				events,
-				visEventEnds,
-				d,
-				addMinutes(cloneDate(d), maxMinute-minMinute)
-			);
+				colSegs = placeSlotSegs(colSegs); // returns a new order
 
-			colSegs = placeSlotSegs(colSegs); // returns a new order
-
-			for (j=0; j<colSegs.length; j++) {
-				seg = colSegs[j];
-				seg.col = i;
-				segs.push(seg);
+				for (j=0; j<colSegs.length; j++) {
+					seg = colSegs[j];
+					seg.col = i * sourcesCount + src;
+					segs.push(seg);
+				}
 			}
 		}
 
@@ -118,7 +133,7 @@ function AgendaEventRenderer() {
 	}
 
 
-	function sliceSegs(events, visEventEnds, start, end) {
+	function sliceSegs(events, visEventEnds, start, end, source) {
 		var segs = [],
 			i, len=events.length, event,
 			eventStart, eventEnd,
@@ -128,7 +143,8 @@ function AgendaEventRenderer() {
 			event = events[i];
 			eventStart = event.start;
 			eventEnd = visEventEnds[i];
-			if (eventEnd > start && eventStart < end) {
+			var sourceKey = calendar.getSourceKey(event.source);
+            if (eventEnd > start && eventStart < end && (typeof source === 'undefined' || sourceKey === -1 || (splitBySources && sourceKey === source))) {
 				if (eventStart < start) {
 					segStart = cloneDate(start);
 					isStart = false;
@@ -387,7 +403,7 @@ function AgendaEventRenderer() {
 		var allDay = true;
 		var dayDelta;
 		var hoverListener = getHoverListener();
-		var colWidth = getColWidth();
+		var colWidth = splitBySources ? getSrcColWidth() : getColWidth();
 		var snapHeight = getSnapHeight();
 		var snapMinutes = getSnapMinutes();
 		var minMinute = getMinMinute();
@@ -480,6 +496,7 @@ function AgendaEventRenderer() {
 		var coordinateGrid = t.getCoordinateGrid();
 		var colCnt = getColCnt();
 		var colWidth = getColWidth();
+        var snapWidth = splitBySources ? getSrcColWidth() : getColWidth();
 		var snapHeight = getSnapHeight();
 		var snapMinutes = getSnapMinutes();
 
@@ -494,8 +511,8 @@ function AgendaEventRenderer() {
 
 		eventElement.draggable({
 			scroll: false,
-			grid: [ colWidth, snapHeight ],
-			axis: colCnt==1 ? 'y' : false,
+			grid: [ snapWidth, snapHeight ],
+			axis: colCnt==1 && (!splitBySources || calendar.getSourcesCount() == 1)? 'y' : false,
 			opacity: opt('dragOpacity'),
 			revertDuration: opt('dragRevertDuration'),
 			start: function(ev, ui) {
@@ -613,7 +630,7 @@ function AgendaEventRenderer() {
 				else {
 					updateTimeText(minuteDelta);
 					timeElement.css('display', ''); // show() was causing display=inline
-					eventElement.draggable('option', 'grid', [colWidth, snapHeight]); // re-enable grid snapping
+					eventElement.draggable('option', 'grid', [snapWidth, snapHeight]); // re-enable grid snapping
 				}
 			}
 		}
