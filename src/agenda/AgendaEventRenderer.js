@@ -198,13 +198,17 @@ function AgendaEventRenderer() {
 			bottom = timePosition(seg.start, seg.end);
 			columnLeft = colContentLeft(seg.col);
 			columnRight = colContentRight(seg.col);
-			columnWidth = columnRight - columnLeft;
 
-			// shave off space on right near scrollbars (2.5%)
-			// TODO: move this to CSS somehow
-			columnRight -= columnWidth * .025;
-			columnWidth = columnRight - columnLeft;
+            if(event.isBackground) {
+                columnLeft -= 3;
+                columnRight += 3;
+            } else {
+                // shave off space on right near scrollbars (2.5%)
+                // TODO: move this to CSS somehow
+                columnRight -= (columnRight - columnLeft) * .025;
+            }
 
+            columnWidth = columnRight - columnLeft;
 			width = columnWidth * (seg.forwardCoord - seg.backwardCoord);
 
 			if (opt('slotEventOverlap')) {
@@ -312,6 +316,10 @@ function AgendaEventRenderer() {
 		var url = event.url;
 		var skinCss = getSkinCss(event, opt);
 		var classes = ['fc-event', 'fc-event-vert'];
+        if (event.isBackground) {
+           classes.push('fc-event-background');
+           classes.push('fc-event-background-skin');
+        }
 		if (isEventDraggable(event)) {
 			classes.push('fc-event-draggable');
 		}
@@ -349,6 +357,7 @@ function AgendaEventRenderer() {
 			"</div>" +
 			"</div>" +
 			"<div class='fc-event-bg'></div>";
+
 		if (seg.isEnd && isEventResizable(event)) {
 			html +=
 				"<div class='ui-resizable-handle ui-resizable-s'>=</div>";
