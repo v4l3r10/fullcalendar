@@ -332,7 +332,7 @@ function BasicView(element, calendar, viewName) {
 
 		weekNumberWidth = 0;
 		if (showWeekNumbers) {
-			weekNumberWidth = head.find('th.fc-week-number').outerWidth();
+			weekNumberWidth = head.find('th.fc-week-number').outerWidth(true);
 		}
 
 		colWidth = Math.floor((viewWidth - weekNumberWidth) / colCnt);
@@ -466,7 +466,7 @@ function BasicView(element, calendar, viewName) {
 			p = [n];
 			cols[i] = p;
 		});
-		p[1] = n + e.outerWidth();
+		p[1] = n + e.outerWidth(true);
 		bodyRows.each(function(i, _e) {
 			if (i < rowCnt) {
 				e = $(_e);

@@ -470,7 +470,7 @@ function AgendaView(element, calendar, viewName) {
 			axisFirstCells
 				.width('')
 				.each(function(i, _cell) {
-					axisWidth = Math.max(axisWidth, $(_cell).outerWidth());
+					axisWidth = Math.max(axisWidth, $(_cell).outerWidth(true));
 				}),
 			axisWidth
 		);
@@ -629,7 +629,7 @@ function AgendaView(element, calendar, viewName) {
 			p = [n];
 			cols[i] = p;
 		});
-		p[1] = n + e.outerWidth();
+		p[1] = n + e.outerWidth(true);
 		if (opt('allDaySlot')) {
 			e = allDayRow;
 			n = e.offset().top;
