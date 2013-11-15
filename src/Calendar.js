@@ -1,6 +1,6 @@
 
  
-function Calendar(element, options, eventSources) {
+function Calendar(element, options, eventSources, eventResources) {
 	var t = this;
 	
 	
@@ -29,15 +29,25 @@ function Calendar(element, options, eventSources) {
 	t.option = option;
 	t.trigger = trigger;
 	
-	
+	//resource View MOD
+	t.getResources = function() { return eventResources; }
+	t.setResources = function(resources) { eventResources = resources; render(false, true); }
+	t.addEventResource = addEventResource;
+	t.removeEventResource = removeEventResource;
+	t.clientResources = clientResources;
 	// imports
-	EventManager.call(t, options, eventSources);
+	EventManager.call(t, options, eventSources, eventResources);
 	var isFetchNeeded = t.isFetchNeeded;
 	var fetchEvents = t.fetchEvents;
+	var associateResourceWithEvent = t.associateResourceWithEvent;
 	
 	
 	// locals
 	var _element = element[0];
+	//RESOURCEVIEW MOD
+	var resourceList;
+	var resourceListElement;
+	//END MOD
 	var header;
 	var headerElement;
 	var content;
@@ -88,6 +98,13 @@ function Calendar(element, options, eventSources) {
 		content = $("<div class='fc-content' style='position:relative'/>")
 			.prependTo(element);
 
+		// Render out the resource list before the Calendar (not applicable to all views?)
+		resourceList = new ResourceList(t, options, eventResources);
+		resourceListElement = resourceList.render();
+		if(resourceListElement) {
+			element.prepend(resourceListElement);
+		}	
+		
 		header = new Header(t, options);
 		headerElement = header.render();
 		if (headerElement) {
@@ -352,7 +369,42 @@ function Calendar(element, options, eventSources) {
 		rerenderEvents(eventID);
 	}
 
+	/* Resource MOD manage
+	-----------------------------------------------------------------------------*/
+	function addEventResource(resource) {
+		eventResources.push(resource);
+		for(var i = 0; i < events.length; i++) {
+			associateResourceWithEvent(events[i]);
+		}
+		render(false, true);
+	}
 
+		
+	function removeEventResource(resourceId) {
+		var updatedResources = []
+		for(var i = 0; i < eventResources.length; i++) {
+			if(eventResources[i].id != resourceId) {
+				updatedResources.push(eventResources[i]);
+			}
+		}
+		eventResources = updatedResources;
+		render(false, true);
+	}
+	
+	
+	function clientResources(filter) {
+		if ($.isFunction(filter)) {
+			return $.grep(eventResources, filter);
+		}
+		else if (filter) { // an event ID
+			filter += '';
+			return $.grep(eventResources, function(e) {
+				return e.id == filter;
+			});
+		}
+		return eventResources; // else, return all
+	}
+	
 
 	/* Header Updating
 	-----------------------------------------------------------------------------*/

@@ -10,7 +10,7 @@ var ajaxDefaults = {
 var eventGUID = 1;
 
 
-function EventManager(options, _sources) {
+function EventManager(options, _sources, _resources ) {
 	var t = this;
 	
 	
@@ -24,6 +24,8 @@ function EventManager(options, _sources) {
 	t.removeEvents = removeEvents;
 	t.clientEvents = clientEvents;
 	t.normalizeEvent = normalizeEvent;
+	//RESOURCE MOD
+	t.associateResourceWithEvent = associateResourceWithEvent;
 	
 	
 	// imports
@@ -41,6 +43,8 @@ function EventManager(options, _sources) {
 	var loadingLevel = 0;
 	var cache = [];
 	
+	//RESOURCE MOD
+    var resources = _resources;
 	
 	for (var i=0; i<_sources.length; i++) {
 		_addEventSource(_sources[i]);
@@ -377,6 +381,9 @@ function EventManager(options, _sources) {
 			event.className = [];
 		}
 		// TODO: if there is no start date, return false to indicate an invalid event
+		//MOD RESOURCE
+		associateResourceWithEvent(event);
+		
 	}
 	
 	
@@ -410,5 +417,27 @@ function EventManager(options, _sources) {
 		return ((typeof source == 'object') ? (source.events || source.url) : '') || source;
 	}
 
+	/* Resources
+	------------------------------------------------------------------------------*/
+
+	function associateResourceWithEvent(event) {
+		 var i = 0;
+		
+		if(!event.resourceId) {
+            return;
+        }
+        
+        $.each(
+            resources,
+        	function( intIndex, resource ){
+    			if(resource.id == event.resourceId) {
+					event.resource = resource;
+					event.resource._col = i;
+					delete event.resourceId;
+				}
+				i++;
+            }
+        );
+	}
 
 }

@@ -47,13 +47,14 @@ function DayEventRenderer() {
 	// Render `events` onto the calendar, attach mouse event handlers, and call the `eventAfterRender` callback for each.
 	// Mouse event will be lazily applied, except if the event has an ID of `modifiedEventId`.
 	// Can only be called when the event container is empty (because it wipes out all innerHTML).
-	function renderDayEvents(events, modifiedEventId) {
+	function renderDayEvents(events, modifiedEventId, isResourceView) {
 
 		// do the actual rendering. Receive the intermediate "segment" data structures.
 		var segments = _renderDayEvents(
 			events,
 			false, // don't append event elements
-			true // set the heights of the rows
+			true, // set the heights of the rows
+			isResourceView
 		);
 
 		// report the elements to the View, for general drag/resize utilities
@@ -76,14 +77,15 @@ function DayEventRenderer() {
 	// If an event's segment will have row equal to `adjustRow`, then explicitly set its top coordinate to `adjustTop`.
 	// This hack is used to maintain continuity when user is manually resizing an event.
 	// Returns an array of DOM elements for the event.
-	function renderTempDayEvent(event, adjustRow, adjustTop) {
+	function renderTempDayEvent(event, adjustRow, adjustTop,isResourceView) {
 
 		// actually render the event. `true` for appending element to container.
 		// Recieve the intermediate "segment" data structures.
 		var segments = _renderDayEvents(
 			[ event ],
 			true, // append event elements
-			false // don't set the heights of the rows
+			false, // don't set the heights of the rows
+			isResourceView
 		);
 
 		var elements = [];
@@ -104,7 +106,7 @@ function DayEventRenderer() {
 	// Not responsible for attaching handlers or calling callbacks.
 	// Set `doAppend` to `true` for rendering elements without clearing the existing container.
 	// Set `doRowHeights` to allow setting the height of each row, to compensate for vertical event overflow.
-	function _renderDayEvents(events, doAppend, doRowHeights) {
+	function _renderDayEvents(events, doAppend, doRowHeights, isResourceView) {
 
 		// where the DOM nodes will eventually end up
 		var finalContainer = getDaySegmentContainer();
@@ -121,7 +123,7 @@ function DayEventRenderer() {
 		calculateHorizontals(segments);
 
 		// build the HTML string. relies on `left` property
-		html = buildHTML(segments);
+		html = buildHTML(segments,isResourceView);
 
 		// render the HTML. innerHTML is considerably faster than jQuery's .html()
 		renderContainer[0].innerHTML = html;
@@ -215,10 +217,10 @@ function DayEventRenderer() {
 
 
 	// Build a concatenated HTML string for an array of segments
-	function buildHTML(segments) {
+	function buildHTML(segments,isResourceView) {
 		var html = '';
 		for (var i=0; i<segments.length; i++) {
-			html += buildHTMLForSegment(segments[i]);
+			html += buildHTMLForSegment(segments[i],isResourceView);
 		}
 		return html;
 	}
@@ -228,7 +230,7 @@ function DayEventRenderer() {
 	// Relies on the following properties:
 	// - `segment.event` (from `buildSegmentsForEvent`)
 	// - `segment.left` (from `calculateHorizontals`)
-	function buildHTMLForSegment(segment) {
+	function buildHTMLForSegment(segment, isResourceView) {
 		var html = '';
 		var isRTL = opt('isRTL');
 		var event = segment.event;
@@ -748,4 +750,5 @@ function compareDaySegments(a, b) {
 		a.event.start - b.event.start || // if a tie, sort by event start date
 		(a.event.title || '').localeCompare(b.event.title) // if a tie, sort by event title
 }
+
 
