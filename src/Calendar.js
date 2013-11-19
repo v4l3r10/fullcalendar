@@ -1,4 +1,3 @@
-
  
 function Calendar(element, options, eventSources, eventResources) {
 	var t = this;
@@ -165,10 +164,15 @@ function Calendar(element, options, eventSources, eventResources) {
 	-----------------------------------------------------------------------------*/
 	
 
-	function changeView(newViewName) {
+	function changeView(newViewName, force) {
 		if (!currentView || newViewName != currentView.name) {
 			_changeView(newViewName);
 		}
+		//Dynamic slotMinutes workaround
+		else if (force){
+			changeView(newViewName);
+          		refetchEvents();
+        	}
 	}
 
 
@@ -546,8 +550,21 @@ function Calendar(element, options, eventSources, eventResources) {
 			options[name] = value;
 			updateSize();
 		}
+		//Dynamic SlotMinutes WorkAround
+		if(name == 'slotMinutes' && typeof value == 'number') {
+            		options[name] = value;
+            		renderAgain();
+        	}
 	}
 	
+	//Dynamic SlotMinutes WorkAround
+	function renderAgain() {
+        	view = getView()
+        	if(view.name)
+            		changeView(view.name, true)
+        	else
+            		changeView(options.defaultView)    
+    	}
 	
 	function trigger(name, thisObj) {
 		if (options[name]) {
