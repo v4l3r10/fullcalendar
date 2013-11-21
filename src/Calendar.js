@@ -506,6 +506,15 @@ function Calendar(element, options, eventSources) {
         }
 	}
 	
+	//Rerender page after change of slotMinutes and snapMinutes
+	//Dynamic SlotMinutes WorkAround
+    function renderAgain() {
+        view = getView();
+        if(view.name)
+            changeView(view.name, true);
+        else
+            changeView(options.defaultView);
+    }
 	
 	function trigger(name, thisObj) {
 		if (options[name]) {
