@@ -148,10 +148,15 @@ function Calendar(element, options, eventSources) {
 	-----------------------------------------------------------------------------*/
 	
 
-	function changeView(newViewName) {
+	function changeView(newViewName, force) {
 		if (!currentView || newViewName != currentView.name) {
 			_changeView(newViewName);
 		}
+		//Dynamic slotMinutes workaround
+		else if (force){
+			changeView(newViewName);
+            refetchEvents();
+        }
 	}
 
 
@@ -494,6 +499,11 @@ function Calendar(element, options, eventSources) {
 			options[name] = value;
 			updateSize();
 		}
+		 //Dynamic SlotMinutes/snapMinutes WorkAround
+        if((name == 'slotMinutes' && typeof value == 'number') ||(name == 'snapMinutes' && typeof value == 'number') ) {
+            options[name] = value;
+            renderAgain();
+        }
 	}
 	
 	
