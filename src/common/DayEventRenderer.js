@@ -206,8 +206,8 @@ function DayEventRenderer() {
 			var leftFunc = (isRTL ? segment.isEnd : segment.isStart) ? colContentLeft : colLeft;
 			var rightFunc = (isRTL ? segment.isStart : segment.isEnd) ? colContentRight : colRight;
 
-			var left = leftFunc(segment.leftCol);
-			var right = rightFunc(segment.rightCol);
+			var left = leftFunc(segment.leftCol, true);
+			var right = rightFunc(segment.rightCol, true);
 			segment.left = left;
 			segment.outerWidth = right - left;
 		}
